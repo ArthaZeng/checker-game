@@ -1,20 +1,20 @@
 import React from "react";
-import { ItemTypes } from "../ItemTypes.ts";
+import { ItemTypes } from "../common/ItemTypes.ts";
 import { useDrop } from "react-dnd";
 import { PieceColor } from "../common/enums.ts";
-import { SIZE } from "../common/constants.ts";
+import { getPosition } from "../common/functions.ts";
+import { Overlay, OverlayType } from "./Overlay.tsx";
 
-const isWhiteSquare = (i: number) => {
-  const x = i % SIZE;
-  const y = Math.floor(i / SIZE);
+const isWhiteSquare = (point: number) => {
+  const [x, y] = getPosition(point);
   return (x + y) % 2 !== 1;
 };
 
-export const Square = ({ position, children, game }) => {
-  const [, drop] = useDrop(
+export const Square = ({ position, children, checkerColor, game }) => {
+  const [{ isOver, canDrop }, drop] = useDrop(
     () => ({
       accept: ItemTypes.CHECKER,
-      canDrop: () => game.canMoveChecker(position),
+      canDrop: (item) => game.canMoveChecker(item, position, checkerColor),
       drop: (item: { color: PieceColor; id: number }) =>
         game.moveChecker({ ...item, position }),
       collect: (monitor) => ({
@@ -24,19 +24,6 @@ export const Square = ({ position, children, game }) => {
     }),
     [game]
   );
-
-  // const handleDropItem = ({ id, color, position }) => {
-  //   let newWhiteCheckers = whiteCheckers;
-  //   let newBlackCheckers = blackCheckers;
-  //   if (color === PieceColor.white) {
-  //     newWhiteCheckers = [...newWhiteCheckers.filter((i) => i !== id), position]
-  //   } else {
-  //     newBlackCheckers=[...newBlackCheckers.filter((i) => i !== id), position]
-  //   }
-  //   setWhiteCheckers(newWhiteCheckers);
-  //   setBlackCheckers(newBlackCheckers);
-  //   setStepCount(stepCount + 1);
-  // };
 
   return (
     <div
@@ -51,6 +38,9 @@ export const Square = ({ position, children, game }) => {
       }}
     >
       {children}
+      {isOver && !canDrop && <Overlay type={OverlayType.IllegalMoveHover} />}
+      {!isOver && canDrop && <Overlay type={OverlayType.PossibleMove} />}
+      {isOver && canDrop && <Overlay type={OverlayType.LegalMoveHover} />}
     </div>
   );
 };

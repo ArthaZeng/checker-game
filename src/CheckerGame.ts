@@ -2,7 +2,9 @@ import {
   initializedBlackCheckers,
   initializedWhiteCheckers,
 } from "./chessBoard/constants.ts";
+import { CheckerItem } from "./common/types.ts";
 import { PieceColor } from "./common/enums.ts";
+import { getPosition } from "./common/functions.ts";
 
 type BoardObserver =
   | [
@@ -45,8 +47,19 @@ export class CheckerGame {
     this.emitChange();
   }
 
-  public canMoveChecker(position: number): boolean {
-    return true;
+  public canMoveChecker(item: CheckerItem, position: number, hasChecker: boolean): boolean {
+    if (hasChecker) {
+      return false;
+    }
+    console.log(item, position);
+    const {id, color} = item;
+    const [oldX, oldY] = getPosition(id);
+    const [newX, newY] = getPosition(position);
+
+    if (Math.abs(oldX-newX) === 1 && Math.abs(oldY-newY)===1) {
+      return true;
+    }
+    return false;
   }
 
   private emitChange() {
