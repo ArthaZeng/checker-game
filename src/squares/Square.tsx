@@ -4,18 +4,19 @@ import { useDrop } from "react-dnd";
 import { PieceColor } from "../common/enums.ts";
 import { getPosition } from "../common/functions.ts";
 import { Overlay, OverlayType } from "./Overlay.tsx";
+import { CheckerItem } from "../common/types.ts";
 
 const isWhiteSquare = (point: number) => {
   const [x, y] = getPosition(point);
   return (x + y) % 2 !== 1;
 };
 
-export const Square = ({ position, children, checkerColor, game }) => {
+export const Square = ({ position, children, game }) => {
   const [{ isOver, canDrop }, drop] = useDrop(
     () => ({
       accept: ItemTypes.CHECKER,
-      canDrop: (item) => game.canMoveChecker(item, position, checkerColor),
-      drop: (item: { color: PieceColor; id: number }) =>
+      canDrop: (item) => game.canMoveChecker(item, position),
+      drop: (item: CheckerItem) =>
         game.moveChecker({ ...item, position }),
       collect: (monitor) => ({
         isOver: !!monitor.isOver(),

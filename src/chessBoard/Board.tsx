@@ -34,7 +34,7 @@ export const Board = ({ game }) => {
 
     return (
       <div style={squareStyle}>
-        <Square position={point} game={game} checkerColor={checkerColor}>
+        <Square position={point} game={game}>
           {checkerColor ? <Checker color={checkerColor} id={point} /> : null}
         </Square>
       </div>
