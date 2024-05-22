@@ -1,6 +1,6 @@
 import { SIZE } from "./constants.ts";
 
-export const getPosition = (point: number) => {
+export const getPosition = (point: number): [number, number] => {
     // [x, y]
-    return [point % SIZE, Math.floor(point / SIZE)];
+    return [Math.floor(point / SIZE), point % SIZE];
 }

@@ -47,18 +47,34 @@ export class CheckerGame {
     this.emitChange();
   }
 
-  public canMoveChecker(item: CheckerItem, position: number, hasChecker: boolean): boolean {
-    if (hasChecker) {
+  public canMoveChecker(
+    item: CheckerItem,
+    position: number,
+    checkerColor: boolean | PieceColor
+  ): boolean {
+    /**
+     * Based on the rule of the game:
+     * 1. it only supports to move forward and only 1 step every time
+     * 2. 
+     * reference: https://www.usatoday.com/story/graphics/2023/01/23/how-to-play-checkers-rules-strategy/10795787002/
+     */
+    if (!!checkerColor) {
       return false;
     }
-    console.log(item, position);
-    const {id, color} = item;
+    const { id, color } = item;
     const [oldX, oldY] = getPosition(id);
     const [newX, newY] = getPosition(position);
 
-    if (Math.abs(oldX-newX) === 1 && Math.abs(oldY-newY)===1) {
-      return true;
+    if (color === PieceColor.black) {
+      if ((oldX - newX) === 1 && Math.abs(oldY - newY) === 1) {
+        return true
+      }
+    } else if (color === PieceColor.white) {
+      if ((newX - oldX) === 1 && Math.abs(oldY - newY) === 1) {
+        return true
+      }
     }
+
     return false;
   }
 
