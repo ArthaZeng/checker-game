@@ -20,7 +20,8 @@ export class CheckerGame {
   public whiteCheckers: number[] = initializedWhiteCheckers;
   public stepCount: number = 0;
 
-  private foundEnemy: boolean = false;
+  private enemies = new Set<number>();
+  private eatEnemyPoint: null | number = null;
 
   private observers: BoardObserver[] = [];
 
@@ -33,19 +34,35 @@ export class CheckerGame {
     };
   }
 
+  private resetEnemies() {
+    this.enemies = new Set<number>();
+    this.eatEnemyPoint = null;
+  }
+
+  public hasEnemies(): boolean {
+    return !!this.enemies.size;
+  }
+
   public moveChecker({ color, id, position }): void {
     this.stepCount += 1;
 
     if (color === PieceColor.white) {
       this.whiteCheckers = [
-        ...this.whiteCheckers.filter((i) => i !== id),
+        ...this.whiteCheckers.filter((point) => point !== id),
         position,
       ];
     } else {
       this.blackCheckers = [
-        ...this.blackCheckers.filter((i) => i !== id),
+        ...this.blackCheckers.filter((point) => point !== id),
         position,
       ];
+      if (this.enemies.size) {
+        for (let index of this.enemies) {
+          this.whiteCheckers = this.whiteCheckers.filter(
+            (point) => point !== index
+          );
+        }
+      }
     }
     this.emitChange();
   }
@@ -61,6 +78,12 @@ export class CheckerGame {
       this.blackCheckers.indexOf(position) !== -1 ||
       this.whiteCheckers.indexOf(position) !== -1
     ) {
+      return false;
+    }
+
+    if (this.eatEnemyPoint === position) {
+      return true;
+    } else if (this.eatEnemyPoint !== null && this.eatEnemyPoint !== position) {
       return false;
     }
 
@@ -86,25 +109,35 @@ export class CheckerGame {
           this.blackCheckers.indexOf(emptySquare1) === -1 &&
           this.whiteCheckers.indexOf(emptySquare1) === -1
         ) {
+          this.enemies.add(whiteEnemyCheckerPos);
           diff = -2;
         } else {
           return false;
         }
       }
+      this.eatEnemyPoint = position;
       return true;
     }
 
-    if (color === PieceColor.black) {
-      if (oldX - newX === 1 && Math.abs(oldY - newY) === 1) {
-        return true;
-      }
-    } else if (color === PieceColor.white) {
-      if (newX - oldX === 1 && Math.abs(oldY - newY) === 1) {
-        return true;
-      }
+    if (
+      color === PieceColor.black &&
+      oldX - newX === 1 &&
+      Math.abs(oldY - newY) === 1
+    ) {
+      return true;
+    } else if (
+      color === PieceColor.white &&
+      newX - oldX === 1 &&
+      Math.abs(oldY - newY) === 1
+    ) {
+      return true;
     }
 
     return false;
+  }
+
+  public endDrag() {
+    this.resetEnemies();
   }
 
   private emitChange() {
@@ -115,5 +148,6 @@ export class CheckerGame {
       setWhiteCheckers && setWhiteCheckers(this.whiteCheckers);
       setBlackCheckers && setBlackCheckers(this.blackCheckers);
     });
+    this.resetEnemies();
   }
 }
