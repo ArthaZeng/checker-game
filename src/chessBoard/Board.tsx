@@ -1,11 +1,9 @@
-import React, { CSSProperties, useEffect, useState } from "react";
-import { PieceColor } from "../common/enums.ts";
-import { SIZE } from "../common/constants.ts";
-import { boardStyle } from "./constants.ts";
-import { Checker } from "../squares/Checker.tsx";
-import { Square } from "../squares/Square.tsx";
-
-const squareStyle: CSSProperties = { width: "12.5%", height: "12.5%" };
+import React, { useEffect, useState } from "react";
+import { PieceColor } from "../common/enums";
+import { SIZE } from "../common/constants";
+import { boardStyle, squareStyle } from "./constants";
+import { Checker } from "../checkers/Checker";
+import { Square } from "../squares/Square";
 
 export const Board = ({ game }) => {
   const [stepCount, setStepCount] = useState<number>(game.stepCount);
@@ -35,7 +33,9 @@ export const Board = ({ game }) => {
     return (
       <div style={squareStyle}>
         <Square position={point} game={game}>
-          {checkerColor ? <Checker game={game} color={checkerColor} id={point} /> : null}
+          {checkerColor ? (
+            <Checker game={game} color={checkerColor} id={point} />
+          ) : null}
         </Square>
       </div>
     );
@@ -49,6 +49,8 @@ export const Board = ({ game }) => {
   return (
     <>
       <div>steps: {stepCount}</div>
+      <div>Current White Checkers: {whiteCheckers.length}</div>
+      <div>Current Black Checkers: {blackCheckers.length}</div>
       <div style={boardStyle}>{squares}</div>
     </>
   );

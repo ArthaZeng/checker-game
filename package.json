@@ -1,5 +1,5 @@
 {
-  "name": "birdseye-assignment",
+  "name": "Checker-Game",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -11,13 +11,15 @@
     "react-dnd-html5-backend": "^16.0.1",
     "react-dom": "^18.3.1",
     "react-scripts": "5.0.1",
-    "web-vitals": "^2.1.0"
+    "web-vitals": "^2.1.0",
+    "webpack": "^5.91.0"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "watch": "webpack --watch --progress --config webpack.config.js"
   },
   "eslintConfig": {
     "extends": [
@@ -38,6 +40,9 @@
     ]
   },
   "devDependencies": {
-    "typescript": "^5.4.5"
+    "file-loader": "^6.2.0",
+    "ts-loader": "^9.5.1",
+    "typescript": "^5.4.5",
+    "webpack-cli": "^5.1.4"
   }
 }

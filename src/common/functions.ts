@@ -1,6 +1,10 @@
-import { SIZE } from "./constants.ts";
+import { SIZE } from "./constants";
 
-export const getPosition = (point: number): [number, number] => {
-    // [x, y]
-    return [Math.floor(point / SIZE), point % SIZE];
-}
+// [x = row, y = column]
+export const getPosition = (point: number): [number, number] => [
+  Math.floor(point / SIZE),
+  point % SIZE,
+];
+
+export const getChessBoardIndex = ([row, col]: [number, number]): number =>
+  col + row * SIZE;
