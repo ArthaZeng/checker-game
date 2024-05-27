@@ -3,7 +3,6 @@ import { getPosition, getChessBoardIndex } from "../common/functions";
 import { RESULT } from "./enums";
 import { moveCheckerPosition, removeCheckers } from "./functions";
 
-
 export class AIGame {
   private enemies = new Set<number>();
   private eatEnemyPoint: null | number = null;
@@ -30,19 +29,19 @@ export class AIGame {
 
     if (row + 1 > SIZE) {
       // already reach the last line, cannot move forward
-      return null;
+      return { nextMove: undefined, whiteCheckers, blackCheckers };
     }
 
     // check enemy moves
     let diff = 2;
     while (diff + col < SIZE) {
-      const newRightX = diff + row;
+      const newRightCol = diff + col;
       const blackEnemyCheckerPos = getChessBoardIndex([
-        newRightX - 1,
+        newRightCol - 1,
         col + diff - 1,
       ]);
-      const emptySquare = getChessBoardIndex([newRightX, col + diff]);
-      if (newRightX < SIZE) {
+      const emptySquare = getChessBoardIndex([newRightCol, col + diff]);
+      if (newRightCol < SIZE) {
         if (
           blackCheckers.indexOf(blackEnemyCheckerPos) !== -1 &&
           blackCheckers.indexOf(emptySquare) === -1 &&
@@ -60,7 +59,11 @@ export class AIGame {
     if (this.eatEnemyPoint) {
       return {
         nextMove: this.eatEnemyPoint,
-        whiteCheckers: moveCheckerPosition(id, this.eatEnemyPoint, whiteCheckers),
+        whiteCheckers: moveCheckerPosition(
+          id,
+          this.eatEnemyPoint,
+          whiteCheckers
+        ),
         blackCheckers: removeCheckers(Array.from(this.enemies), blackCheckers),
       };
     }
@@ -86,7 +89,11 @@ export class AIGame {
     ) {
       return {
         nextMove: rightPossibleMove,
-        whiteCheckers: moveCheckerPosition(id, rightPossibleMove, whiteCheckers),
+        whiteCheckers: moveCheckerPosition(
+          id,
+          rightPossibleMove,
+          whiteCheckers
+        ),
         blackCheckers,
       };
     }
@@ -104,7 +111,6 @@ export class AIGame {
       this.resetEnemies();
       return { result: RESULT.win, whiteCheckers, blackCheckers };
     } else {
-      // let foundNextMove = false;
       while (length > 0) {
         const randomIndex = Math.floor(Math.random() * length);
         const checkerId = existingWhiteChecker[randomIndex];
@@ -119,38 +125,24 @@ export class AIGame {
         });
 
         if (nextMove) {
-          console.log(
-            "current ",
-            getPosition(checkerId),
-            "to ",
-            getPosition(nextMove)
-          );
-          // foundNextMove = true;
+          console.log(getPosition(checkerId), "=>", getPosition(nextMove));
+
           return {
             whiteCheckers: newWhiteCheckers,
             blackCheckers: newBlackCheckers,
             result: undefined,
           };
-          // break;
         } else {
           existingWhiteChecker.splice(randomIndex, 1);
           length = existingWhiteChecker.length;
         }
       }
 
-      // if (foundNextMove) {
-      //   return {
-      //     whiteCheckers,
-      //     blackCheckers,
-      //     result: undefined,
-      //   };
-      // } else {
       return {
         whiteCheckers,
         blackCheckers,
         result: RESULT.tie,
       };
-      // }
     }
   }
 }

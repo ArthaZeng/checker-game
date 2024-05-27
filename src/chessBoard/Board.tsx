@@ -49,8 +49,10 @@ export const Board = ({ game }) => {
   return (
     <>
       <div>steps: {stepCount}</div>
-      <div>Current White Checkers: {whiteCheckers.length}</div>
-      <div>Current Black Checkers: {blackCheckers.length}</div>
+      <div>White Checkers: {whiteCheckers.length}</div>
+      <div>Black Checkers: {blackCheckers.length}</div>
+      {/* <button onClick={}>Restart</button> */}
+      {/* <button>Redo</button> */}
       <div style={boardStyle}>{squares}</div>
     </>
   );

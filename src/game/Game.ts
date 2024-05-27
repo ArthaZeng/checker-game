@@ -29,9 +29,7 @@ export class Game {
     this.observers.push([setStepCount, setWhiteCheckers, setBlackCheckers]);
     this.emitChange();
 
-    return (): void => {
-      // this.observers = this.observers.filter((t) => t !== o);
-    };
+    return (): void => {};
   }
 
   public moveBlackChecker({ id, position }): void {
@@ -44,14 +42,17 @@ export class Game {
       blackCheckers: this.blackCheckers,
     });
 
-    const { result, whiteCheckers, blackCheckers } = this.aiGame.moveWhiteChecker({
-      ...newCheckers,
-    });
+    const { result, whiteCheckers, blackCheckers } =
+      this.aiGame.moveWhiteChecker({
+        ...newCheckers,
+      });
 
     if (result === RESULT.win) {
-      console.log("win");
+      this.whiteCheckers = [];
+      console.log('win');
     } else if (result === RESULT.lose) {
-      console.log("lose");
+      this.blackCheckers = [];
+      console.log('lose');
     } else {
       this.whiteCheckers = whiteCheckers;
       this.blackCheckers = blackCheckers;
@@ -61,7 +62,7 @@ export class Game {
   }
 
   public canMoveBlackChecker(item: CheckerItem, position: number): boolean {
-    return this.userGame.canMoveBlackChecker({
+    return this.userGame.canMoveChecker({
       item,
       position,
       whiteCheckers: this.whiteCheckers,
@@ -75,7 +76,6 @@ export class Game {
 
   private emitChange() {
     this.observers.forEach((boardObservers) => {
-      // console.log(boardObservers);
       const [setStepCount, setWhiteCheckers, setBlackCheckers] = boardObservers;
       setStepCount && setStepCount(this.stepCount);
       setWhiteCheckers && setWhiteCheckers(this.whiteCheckers);
