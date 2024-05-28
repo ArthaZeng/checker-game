@@ -53,7 +53,9 @@ export const Board = ({ game }) => {
       <div>Black Checkers: {blackCheckers.length}</div>
       {/* <button onClick={}>Restart</button> */}
       {/* <button>Redo</button> */}
-      <div style={boardStyle}>{squares}</div>
+      {whiteCheckers.length !== 0 && blackCheckers.length !== 0 && <div style={boardStyle}>{squares}</div>}
+      {whiteCheckers.length === 0 && <div>Win!</div>}
+      {blackCheckers.length === 0 && <div>Lose... Nice try</div>}
     </>
   );
 };

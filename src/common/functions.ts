@@ -7,4 +7,9 @@ export const getPosition = (point: number): [number, number] => [
 ];
 
 export const getChessBoardIndex = ([row, col]: [number, number]): number =>
-  col + row * SIZE;
+  {
+    if (row >= SIZE || col >= SIZE || row <0 || col < 0) {
+      return -1;
+    }
+    return col + row * SIZE;
+  }
