@@ -1,22 +1,17 @@
-import { getChessBoardIndex, getPosition } from "../common/functions";
-import { SIZE } from "../common/constants";
+import { getPosition } from "../common/functions";
 import {
-  canEatEnemy,
+  findAvailableSpots,
   isPlaced,
   moveCheckerPosition,
   removeCheckers,
 } from "./functions";
-import { CheckerItem } from "../common/types";
 
 export class UserGame {
   private upgradedBlackCheckers: number[] = [];
-  private enemies: [number, number] | [] = [];
-  private boardMap = new Map();
-  private eatEnemyPoint: null | number = null;
+  private enemies: number[] = [];
 
   private resetEnemies() {
     this.enemies = [];
-    this.eatEnemyPoint = null;
   }
 
   public hasEnemies(): boolean {
@@ -29,7 +24,10 @@ export class UserGame {
       this.upgradedBlackCheckers.push(position);
     }
     if (this.upgradedBlackCheckers.indexOf(id) > -1) {
-      this.upgradedBlackCheckers = [...this.upgradedBlackCheckers.filter(point => point !== id), position];
+      this.upgradedBlackCheckers = [
+        ...this.upgradedBlackCheckers.filter((point) => point !== id),
+        position,
+      ];
     }
 
     let newWhiteCheckers = [...whiteCheckers];
@@ -37,6 +35,7 @@ export class UserGame {
 
     newBlackCheckers = moveCheckerPosition(id, position, blackCheckers);
     if (this.enemies.length) {
+      console.log('the path to eat enemy is', this.enemies);
       newWhiteCheckers = removeCheckers(this.enemies, whiteCheckers);
     }
 
@@ -47,66 +46,28 @@ export class UserGame {
     };
   }
 
-  public canMoveChecker({
-    item,
-    position,
-    whiteCheckers,
-    blackCheckers,
-  }: {
-    item: CheckerItem;
-    position: number;
-    whiteCheckers: number[];
-    blackCheckers: number[];
-  }): boolean {
-    if (this.boardMap.get(position) !== undefined) {
-      return this.boardMap.get(position);
+  public canMoveChecker({ item, position, whiteCheckers, blackCheckers }) {
+    if (this.enemies.length) {
+      return this.enemies[this.enemies.length - 1] === position;
     }
     if (isPlaced({ position, whiteCheckers, blackCheckers })) {
       return false;
     }
-    if (this.enemies.length) {
-      return this.eatEnemyPoint === position;
-    }
 
-    const result = canEatEnemy({
-      from: getPosition(position),
-      to: getPosition(item.id),
+    const result = findAvailableSpots({
+      to: item.id,
       whiteCheckers,
       blackCheckers,
+      upgraded: this.upgradedBlackCheckers.indexOf(item.id) > -1,
     });
-    // console.log(getPosition(position), 'result', result);
-    if (result.ableToMove) {
-      this.boardMap.set(position, true);
-      this.enemies = result.enemies;
-      this.eatEnemyPoint = position;
-      return true;
-      // set enemies and return enemies position
+    if (result[0] === item.id) {
+      this.enemies = result;
     } else {
-      const [fromRow, fromCol] = getPosition(position);
-
-      if (fromRow + 1 >= SIZE) {}
-      if (fromRow - 1 < 0) {}
-      if (fromCol + 1 >= SIZE) {}
-      if (fromCol - 1 < 0) {}
-
-      const nextStep = [
-        getChessBoardIndex([fromRow + 1, fromCol + 1]),
-        getChessBoardIndex([fromRow + 1, fromCol - 1]),
-        getChessBoardIndex([fromRow - 1, fromCol + 1]),
-        getChessBoardIndex([fromRow - 1, fromCol - 1]),
-      ];
-      const canMove =
-        this.upgradedBlackCheckers.indexOf(item.id) > -1
-          ? nextStep[0] === item.id || nextStep[1] === item.id || nextStep[2] === item.id || nextStep[3] === item.id
-          : nextStep[0] === item.id || nextStep[1] === item.id;
-
-      this.boardMap.set(position, canMove);
-      return this.boardMap.get(position);
+      return result.indexOf(position) > -1;
     }
   }
 
   public endDrag() {
     this.resetEnemies();
-    this.boardMap = new Map();
   }
 }

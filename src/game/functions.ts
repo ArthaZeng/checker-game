@@ -1,5 +1,5 @@
-import { SIZE } from "../common/constants";
-import { getChessBoardIndex } from "../common/functions";
+import { DIRECTIONS, DIRECTIONS_WITHOUT_UPGRADED, SIZE } from "../common/constants";
+import { getChessBoardIndex, getPosition } from "../common/functions";
 
 export const moveCheckerPosition = (
   from: number,
@@ -13,96 +13,90 @@ export const removeCheckers = (ids: number[], checkerArr: number[]) =>
 export const isPlaced = ({ position, whiteCheckers, blackCheckers }) =>
   whiteCheckers.indexOf(position) > -1 || blackCheckers.indexOf(position) > -1;
 
-export const canEatEnemy = ({
-  from,
-  to,
-  whiteCheckers,
-  blackCheckers,
-  enemies = [],
-  boardMap = new Map(),
-  path = [],
-}) => {
-  const [fromRow, fromCol] = from;
-  const fromIndex = getChessBoardIndex(from);
-  const [toRow, toCol] = to;
+export const isOutsideBoard = ([row, col]) =>
+  row < 0 || row >= SIZE || col < 0 || col >= SIZE;
 
-  // console.log(path, from);
-  if (path.indexOf(fromIndex) !== -1) {
-    // console.log("should not be here");
-    return { ableToMove: false, enemies };
-  }
+export const findEnemiesPath = ({ whiteCheckers, blackCheckers, path }) => {
+  const lastSquare = path[path.length - 1];
+  const [row, col] = getPosition(lastSquare);
 
-  if (boardMap.get(fromIndex)) {
-    console.log(boardMap);
-    return boardMap.get(fromIndex);
-  }
+  for (const index in DIRECTIONS) {
+    const nextEnemyRow = row + DIRECTIONS[index][0];
+    const nextEnemyCol = col + DIRECTIONS[index][1];
+    const nextEnemyIndex = getChessBoardIndex([nextEnemyRow, nextEnemyCol]);
+    if (
+      !isOutsideBoard([nextEnemyRow, nextEnemyCol]) &&
+      path.indexOf(nextEnemyIndex) === -1 &&
+      whiteCheckers.indexOf(nextEnemyIndex) > -1
+    ) {
+      const nextSquareRow = nextEnemyRow + DIRECTIONS[index][0];
+      const nextSquareCol = nextEnemyCol + DIRECTIONS[index][1];
+      const nextSquareIndex = getChessBoardIndex([
+        nextSquareRow,
+        nextSquareCol,
+      ]);
 
-  if (fromRow >= SIZE || toCol >= SIZE || fromRow < 0 || toCol < 0) {
-    // console.log("1", from);
-    // the from position is outside the board
-    // boardMap.set(fromIndex, { ableToMove: false });
-    return { ableToMove: false, enemies };
-  }
-
-  const isEnemy = (positionIndex) => whiteCheckers.indexOf(positionIndex) > -1;
-
-  const next = ({ rowDirection, colDirection }) => {
-    const nextSquareIndex = getChessBoardIndex([
-      fromRow + rowDirection,
-      fromCol + colDirection,
-    ]);
-    if (isEnemy(nextSquareIndex)) {
       if (
-        fromRow + rowDirection * 2 === toRow &&
-        fromCol + colDirection * 2 === toCol
-      ) {
-        boardMap.set(fromIndex, {
-          ableToMove: true,
-          enemies: [...enemies, nextSquareIndex],
-        });
-        return boardMap.get(fromIndex);
-      } else if (
+        !isOutsideBoard([nextSquareRow, nextSquareCol]) &&
+        path.indexOf(nextSquareIndex) === -1 &&
         !isPlaced({ position: nextSquareIndex, whiteCheckers, blackCheckers })
       ) {
-        return canEatEnemy({
-          from: [fromRow + rowDirection * 2, fromCol + colDirection * 2],
-          to,
+        return findEnemiesPath({
           whiteCheckers,
           blackCheckers,
-          path: [...path, fromIndex, nextSquareIndex],
-          enemies: [...enemies, nextSquareIndex],
-          boardMap,
+          path: [...path, nextEnemyIndex, nextSquareIndex],
         });
-      } else {
-        // boardMap.set(fromIndex, { ableToMove: false });
-        return  { ableToMove: false };
       }
     }
-    // boardMap.set(fromIndex, { ableToMove: false });
-    // return boardMap.get(fromIndex);
-    return { ableToMove: false }
-  };
-
-  // leftTop
-  if (next({ rowDirection: -1, colDirection: -1 }).ableToMove) {
-    return boardMap.get(fromIndex);
   }
 
-  // leftBottom
-  if (next({ rowDirection: 1, colDirection: -1 }).ableToMove) {
-    return boardMap.get(fromIndex);
-  }
+  return path;
+};
 
-  // rightTop
-  if (next({ rowDirection: -1, colDirection: 1 }).ableToMove) {
-    return boardMap.get(fromIndex);
-  }
+export const findAvailableSpots = ({ to, whiteCheckers, blackCheckers, upgraded }) => {
+  const [toRow, toCol] = getPosition(to);
 
-  // rightBottom
-  if (next({ rowDirection: +1, colDirection: +1 }).ableToMove) {
-    return boardMap.get(fromIndex);
-  }
+  const availableSquares = [];
+  const directions = upgraded ? DIRECTIONS : DIRECTIONS_WITHOUT_UPGRADED;
+  for (const index in directions) {
+    const pointRow = toRow + directions[index][0];
+    const pointCol = toCol + directions[index][1];
+    if (isOutsideBoard([pointRow, pointCol])) {
+      continue;
+    }
+    const point = [pointRow, pointCol];
+    const position = getChessBoardIndex([pointRow, pointCol]);
 
-  // boardMap.set(fromIndex, { ableToMove: false });
-  return { ableToMove: false };
+    if (!isPlaced({ position, whiteCheckers, blackCheckers })) {
+      availableSquares.push(position);
+    } else {
+      if (whiteCheckers.indexOf(position) > -1) {
+        const nextSquareRow = point[0] + directions[index][0];
+        const nextSquareCol = point[1] + directions[index][1];
+        if (isOutsideBoard([nextSquareRow, nextSquareCol])) {
+          continue;
+        }
+        const nextSquare = [nextSquareRow, nextSquareCol];
+        const nextSquareIndex = getChessBoardIndex([nextSquareRow, nextSquareCol]);
+        if (nextSquare[0] === toRow && nextSquare[1] === toCol) {
+          continue;
+        }
+        if (
+          !isPlaced({
+            position: nextSquareIndex,
+            whiteCheckers,
+            blackCheckers,
+          })
+        ) {
+          // if found a path to eat enemy, then that's the only path
+          return findEnemiesPath({
+            whiteCheckers,
+            blackCheckers,
+            path: [to, position, nextSquareIndex],
+          });
+        }
+      }
+    }
+  }
+  return availableSquares;
 };

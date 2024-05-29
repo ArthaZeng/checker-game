@@ -125,7 +125,7 @@ export class AIGame {
         });
 
         if (nextMove) {
-          console.log(getPosition(checkerId), "=>", getPosition(nextMove));
+          console.log("Computer move", getPosition(checkerId), "=>", getPosition(nextMove));
 
           return {
             whiteCheckers: newWhiteCheckers,
