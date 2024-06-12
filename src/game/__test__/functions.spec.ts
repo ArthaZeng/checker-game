@@ -52,7 +52,7 @@ describe("findAvailableSpots", () => {
     expect(result).toStrictEqual([44, 37, 30]);
   });
 
-  it.only("find an enemy path during multiple white checkers and black checkers - no enemy", () => {
+  it("find an enemy path during multiple white checkers and black checkers - no enemy", () => {
     const result = findAvailableSpots({
       to: 40,
       whiteCheckers,
